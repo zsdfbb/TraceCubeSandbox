@@ -5,6 +5,8 @@
   "section": {
     "info": "Basic Info",
     "infoDesc": "Core properties and current status of the template.",
+    "network": "Network Policy",
+    "networkDesc": "Network type and outbound traffic rules for this template.",
     "replicas": "Replicas",
     "replicasDesc": "Snapshot replicas of this template across nodes.",
     "danger": "Delete Template",
@@ -21,7 +23,13 @@
     "artifactID": "Artifact ID",
     "snapshotPath": "Snapshot Path",
     "lastJob": "Last Job",
-    "lastError": "Last Error"
+    "lastError": "Last Error",
+    "env": "Environment Variables",
+    "networkType": "Network Type",
+    "internetAccess": "Internet Access",
+    "dns": "DNS Servers",
+    "allowOut": "Allow Out",
+    "denyOut": "Deny Out"
   },
   "status": {
     "ready": "Ready",
@@ -48,10 +56,15 @@
     "deleting": "Deleting…"
   },
   "empty": {
-    "replicas": "No replica info available."
+    "replicas": "No replica info available.",
+    "noNetworkPolicy": "Using default network configuration"
   },
   "building": "Template is being built. Please refresh in a moment.",
   "buildFailed": "Template build failed.",
+  "network": {
+    "allowed": "Allowed",
+    "blocked": "Blocked"
+  },
   "specs": "Specs",
   "attributes": "Attributes",
   "copy": "Copy",
