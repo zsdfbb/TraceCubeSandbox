@@ -7,6 +7,33 @@
 
 ---
 
+## 系统安全边界与安全机制位置总览
+
+![系统安全边界总览](系统安全边界总览.svg)
+
+> 上图使用 Claude Official 风格重绘，暖色调背景，7 层安全边界以虚线框分层堆叠；蓝/青/米/灰四色语义着色区分组件类型；实线/虚线/蓝色实线三类箭头区分数据流、配置关系和穿层调用。
+
+### 安全边界总结
+
+| 边界 | 位置 | 核心安全机制 | 编号 |
+|------|------|-------------|------|
+| **1. API 接入层** | CubeAPI / WebUI → 外部 | 认证回调、速率限制、会话 | 4.1 / 4.2 / 4.4 / 4.6 |
+| **2. 控制面** | CubeMaster / Redis | 多租户 namespace、默认凭据 | 4.5 / 4.7 |
+| **3. 主机进程层** | Cubelet / CubeShim / cube-hypervisor | Shim seccomp、no_reaper、vsock、rate limiter | 2.1.2 / 3.6 / 3.7 / 3.8 / 1.7 |
+| **4. 主机内核** | Host OS Kernel | grub 硬化、cgroup、namespace 过滤、eBPF | 2.3 / 2.4 / 2.5 / 2.6 / 3.4.1 / 3.4.3 |
+| **5. KVM 边界** | Host ↔ Guest (核心) | KVM microVM、独立 kernel、virtio、IOMMU | 1.1 / 1.2 / 1.3 / 1.4 / 1.5 / 1.6 |
+| **6. Guest 内部** | Guest OS + agent + 容器 | agent seccomp、capability、overlayfs | 2.1.3 / 2.2 / 2.4 / 3.5 |
+| **7. 出网边界** | TAP → eBPF → TPROXY | 独立 TAP、eBPF L3/L4、L7 MITM | 3.4.1 / 3.4.2 / 3.4.4 |
+
+### 设计理念
+
+- **纵深防御**：七层边界各自独立失效。攻击者需要突破多层才能造成实质损害
+- **三层 seccomp** 覆盖主机→VMM→Guest 完整链路（边界 3/4/6）
+- **网络双保险**：边界 4 eBPF（L3/L4 线速）+ 边界 7 TPROXY（L7 透明代理）
+- **KVM 为核心**：边界 5 用独立 guest kernel 替代共享内核 namespace，容器逃逸面从 1 收敛到 0
+
+---
+
 ## 目录
 
 - [1. 虚拟化层 (Virtualization)](#1-虚拟化层-virtualization)

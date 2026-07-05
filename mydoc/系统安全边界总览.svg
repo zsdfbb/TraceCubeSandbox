@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1080" width="1200" height="1080">
+<style>
+  text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', 'Microsoft JhengHei', 'SimHei', sans-serif; }
+  .title { fill: #1a1a1a; font-size: 22px; font-weight: 700; }
+  .node-title { fill: #1a1a1a; font-size: 16px; font-weight: 700; }
+  .node-sub { fill: #6a6a6a; font-size: 12.5px; }
+  .container-label { fill: #1a1a1a; font-size: 15px; font-weight: 600; }
+  .arrow-label { fill: #5a5a5a; font-size: 13px; font-weight: 500; }
+  .legend-title { fill: #1a1a1a; font-size: 13px; font-weight: 600; }
+  .legend-text { fill: #6a6a6a; font-size: 12px; }
+  .kernel-bullet { fill: #4a4a4a; font-size: 12px; }
+</style>
+<defs>
+  <marker id="arrow-solid" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+    <polygon points="0 0, 8 4, 0 8" fill="#5a5a5a"/>
+  </marker>
+  <marker id="arrow-dashed" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+    <polygon points="0 0, 8 4, 0 8" fill="#8a8a8a"/>
+  </marker>
+  <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+    <polygon points="0 0, 8 4, 0 8" fill="#2563eb"/>
+  </marker>
+  <filter id="shadow-soft">
+    <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/>
+  </filter>
+</defs>
+
+<!-- Warm cream background -->
+<rect width="1200" height="1080" fill="#f8f6f3"/>
+
+<!-- Title -->
+<text x="600" y="36" text-anchor="middle" class="title">系统安全边界与安全机制位置总览</text>
+
+<!-- ===== CLIENT (outside any boundary) ===== -->
+<rect x="460" y="58" width="280" height="50" rx="10" ry="10" fill="#a8c5e6" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="600" y="80" text-anchor="middle" class="node-title">Client / SDK</text>
+<text x="600" y="98" text-anchor="middle" class="node-sub">外部请求入口</text>
+
+<!-- ===== BOUNDARY 1: API 接入层 ===== -->
+<rect x="40" y="130" width="1120" height="96" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="150" class="container-label">🔵 安全边界 1：API 接入层</text>
+
+<rect x="200" y="160" width="340" height="54" rx="10" ry="10" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="370" y="182" text-anchor="middle" class="node-title">CubeAPI</text>
+<text x="370" y="200" text-anchor="middle" class="node-sub">auth callback / rate-limit (token bucket) / health 豁免</text>
+
+<rect x="640" y="160" width="300" height="54" rx="10" ry="10" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="790" y="182" text-anchor="middle" class="node-title">WebUI</text>
+<text x="790" y="200" text-anchor="middle" class="node-sub">DB-backed session (24h TTL)</text>
+
+<!-- Arrow Client ↴ CubeAPI -->
+<path d="M 600,108 v 16 h -230 v 36" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="460" y="125" text-anchor="middle" class="arrow-label">REST</text>
+
+<!-- Arrow WebUI ← WebUI (WebUI to API) -->
+<path d="M 640,187 L 540,187" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+
+<!-- ===== BOUNDARY 2: 控制面 ===== -->
+<rect x="40" y="246" width="1120" height="96" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="266" class="container-label">🔵 安全边界 2：控制面</text>
+
+<rect x="200" y="276" width="340" height="54" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="370" y="298" text-anchor="middle" class="node-title">CubeMaster</text>
+<text x="370" y="316" text-anchor="middle" class="node-sub">多租户 (containerd ns + tenant label)</text>
+
+<rect x="640" y="276" width="300" height="54" rx="10" ry="10" fill="#e8e6e3" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="790" y="298" text-anchor="middle" class="node-title">Redis</text>
+<text x="790" y="316" text-anchor="middle" class="node-sub">默认凭据警告 (deploy preflight)</text>
+
+<!-- Arrow CubeAPI → CubeMaster -->
+<path d="M 370,214 v 62" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="385" y="248" text-anchor="middle" class="arrow-label">gRPC</text>
+
+<!-- Arrow CubeMaster → Redis (dashed) -->
+<path d="M 540,303 h 100" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-dashed)"/>
+<text x="600" y="296" text-anchor="middle" class="arrow-label">凭据配置</text>
+
+<!-- ===== BOUNDARY 3: 计算节点 — 进程级 ===== -->
+<rect x="40" y="362" width="1120" height="138" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="382" class="container-label">🟢 安全边界 3：计算节点 — 进程级</text>
+
+<rect x="80" y="400" width="220" height="52" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="190" y="422" text-anchor="middle" class="node-title">Cubelet</text>
+<text x="190" y="440" text-anchor="middle" class="node-sub">OCI shim v2 / 快照编排</text>
+
+<rect x="340" y="400" width="220" height="52" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="450" y="422" text-anchor="middle" class="node-title">CubeShim</text>
+<text x="450" y="440" text-anchor="middle" class="node-sub">seccomp runtime / no_reaper / vsock</text>
+
+<rect x="600" y="400" width="240" height="52" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="720" y="422" text-anchor="middle" class="node-title">cube-hypervisor</text>
+<text x="720" y="440" text-anchor="middle" class="node-sub">seccomp VMM / virtio / RateLimiter</text>
+
+<rect x="890" y="448" width="190" height="42" rx="10" ry="10" fill="#e8e6e3" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="985" y="470" text-anchor="middle" class="node-title">CubeCoW</text>
+<text x="985" y="486" text-anchor="middle" class="node-sub">FICLONE 快照安全</text>
+
+<!-- Arrow CubeMaster → Cubelet -->
+<path d="M 370,330 v 35 h -180 v 35" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="280" y="365" text-anchor="middle" class="arrow-label">gRPC</text>
+
+<!-- Arrow Cubelet → CubeShim -->
+<path d="M 300,426 h 40" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="330" y="418" text-anchor="middle" class="arrow-label">containerd-shim v2</text>
+
+<!-- Arrow CubeShim → cube-hypervisor -->
+<path d="M 560,426 h 40" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="590" y="418" text-anchor="middle" class="arrow-label">KVM API</text>
+
+<!-- Arrow Cubelet → CubeCoW (dashed, down then right) -->
+<path d="M 190,452 v 21 h 700" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-dashed)"/>
+<text x="580" y="468" text-anchor="middle" class="arrow-label">快照/克隆</text>
+
+<!-- ===== BOUNDARY 4: 主机内核 ===== -->
+<rect x="40" y="520" width="1120" height="170" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="540" class="container-label">🟡 安全边界 4：主机内核</text>
+
+<!-- Large kernel summary node on the left side -->
+<rect x="70" y="560" width="540" height="118" rx="10" ry="10" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="2" filter="url(#shadow-soft)"/>
+<text x="340" y="583" text-anchor="middle" class="node-title">主机内核安全机制</text>
+<text x="84" y="604" class="kernel-bullet">• seccomp-bpf 三层: VMM→KillProcess / Shim→runtime 注入 / Guest→OCI</text>
+<text x="84" y="622" class="kernel-bullet">• cgroups + namespace: CPU/内存/device/pids / 丢弃 cgroup/net/pid</text>
+<text x="84" y="640" class="kernel-bullet">• grub cmdline 硬化: module.sig_enforce / clearcpuid / pti / mitigations</text>
+<text x="84" y="658" class="kernel-bullet">• eBPF CubeVS: from_cube / from_world / from_envoy → L3/L4+SNAT+ARP</text>
+<text x="84" y="676" class="kernel-bullet">• sysctl 防火墙: rp_filter=0 / route_localnet=1 / accept_local=1</text>
+
+<!-- Blue arrow: hypervisor → through kernel → KVM Host -->
+<path d="M 720,452 v 98 L 230,550 v 200" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+<text x="470" y="547" text-anchor="middle" class="arrow-label" fill="#2563eb">KVM API (穿過内核层)</text>
+
+<!-- ===== BOUNDARY 5: KVM 核心边界 ===== -->
+<rect x="40" y="710" width="1120" height="108" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="730" class="container-label">🔴 安全边界 5：KVM Host ↔ Guest 隔离 — 核心边界</text>
+
+<rect x="80" y="742" width="300" height="62" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="230" y="764" text-anchor="middle" class="node-title">Host 侧</text>
+<text x="230" y="782" text-anchor="middle" class="node-sub">KVM microVM / vCPU+mem / virtio queue</text>
+<text x="230" y="798" text-anchor="middle" class="node-sub">VFIO+IOMMU / RateLimiter</text>
+
+<!-- Center separator: KVM boundary line -->
+<line x1="588" y1="735" x2="588" y2="805" stroke="#4a4a4a" stroke-width="2.5" stroke-dasharray="6,4"/>
+<text x="608" y="776" fill="#4a4a4a" font-size="13" font-weight="600">═══ KVM + 独立 Guest Kernel ═══</text>
+
+<rect x="760" y="742" width="300" height="62" rx="10" ry="10" fill="#a8c5e6" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="910" y="764" text-anchor="middle" class="node-title">Guest 侧</text>
+<text x="910" y="782" text-anchor="middle" class="node-sub">独立 Guest OS kernel</text>
+<text x="910" y="798" text-anchor="middle" class="node-sub">启动安全 (ro root / urandom / panic=1)</text>
+
+<!-- Arrow across KVM boundary: Host → Guest (sequential VM lifecycle), not data flow -->
+<path d="M 380,773 h 380" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="580" y="764" text-anchor="middle" class="arrow-label">创建/恢复 VM</text>
+
+<!-- ===== BOUNDARY 6: Guest 内部 ===== -->
+<rect x="40" y="838" width="1120" height="95" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="858" class="container-label">🟣 安全边界 6：Guest 内部</text>
+
+<rect x="80" y="865" width="300" height="54" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="230" y="887" text-anchor="middle" class="node-title">Guest Kernel</text>
+<text x="230" y="905" text-anchor="middle" class="node-sub">audit=0 / cgroup v1+v2 / namespace (IPC/UTS/PID)</text>
+
+<rect x="410" y="865" width="300" height="54" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="560" y="887" text-anchor="middle" class="node-title">cube-agent</text>
+<text x="560" y="905" text-anchor="middle" class="node-sub">seccomp (OCI LinuxSeccomp) / cap 5 sets / namespace unshare</text>
+
+<rect x="740" y="865" width="300" height="54" rx="10" ry="10" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="890" y="887" text-anchor="middle" class="node-title">OCI 容器</text>
+<text x="890" y="905" text-anchor="middle" class="node-sub">overlayfs/virtiofs / cap drop / namespaces</text>
+
+<!-- Arrow: KVM → Guest (VM ready → Guest OS) -->
+<path d="M 600,818 v 47" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="615" y="835" text-anchor="middle" class="arrow-label">VM 就绪 → Guest OS</text>
+
+<!-- ===== BOUNDARY 7: 出网 ===== -->
+<rect x="40" y="953" width="1120" height="95" rx="10" ry="10" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="7,4"/>
+<text x="60" y="973" class="container-label">🟠 安全边界 7：出网 (Egress)</text>
+
+<rect x="80" y="980" width="280" height="48" rx="10" ry="10" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="220" y="1002" text-anchor="middle" class="node-title">TAP 设备</text>
+<text x="220" y="1018" text-anchor="middle" class="node-sub">独立 z 前缀 / 169.254.68.6/32</text>
+
+<rect x="420" y="980" width="300" height="48" rx="10" ry="10" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="570" y="1002" text-anchor="middle" class="node-title">eBPF L3/L4 (CubeVS)</text>
+<text x="570" y="1018" text-anchor="middle" class="node-sub">SNAT / 策略强制 / ARP proxy</text>
+
+<rect x="780" y="980" width="280" height="48" rx="10" ry="10" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="2.5" filter="url(#shadow-soft)"/>
+<text x="920" y="1002" text-anchor="middle" class="node-title">CubeEgress TPROXY</text>
+<text x="920" y="1018" text-anchor="middle" class="node-sub">L7 MITM / 域名白名单 / 凭据注入</text>
+
+<!-- Arrow: Guest → Egress -->
+<path d="M 600,933 v 47" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="615" y="950" text-anchor="middle" class="arrow-label">出站流量</text>
+
+<!-- Arrow TAP → eBPF -->
+<path d="M 360,1004 h 60" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="400" y="996" text-anchor="middle" class="arrow-label">L3/L4 转发</text>
+
+<!-- Arrow eBPF → CubeEgress -->
+<path d="M 720,1004 h 60" fill="none" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="760" y="996" text-anchor="middle" class="arrow-label">TPROXY 转发</text>
+
+<!-- ===== LEGEND (right side of B4, above kernel content) ===== -->
+<rect x="660" y="560" width="330" height="128" rx="8" ry="8" fill="#ffffff" stroke="#9a9a9a" stroke-width="1.5" filter="url(#shadow-soft)"/>
+<text x="672" y="580" class="legend-title">图例说明</text>
+
+<line x1="672" y1="596" x2="704" y2="596" stroke="#5a5a5a" stroke-width="2" marker-end="url(#arrow-solid)"/>
+<text x="714" y="601" class="legend-text">主数据流 / 调用</text>
+
+<line x1="672" y1="616" x2="704" y2="616" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-dashed)"/>
+<text x="714" y="621" class="legend-text">配置 / 辅助关系</text>
+
+<line x1="672" y1="636" x2="704" y2="636" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+<text x="714" y="641" class="legend-text">穿层调用 (KVM API 经内核)</text>
+
+<rect x="672" y="652" width="14" height="14" rx="3" fill="#9dd4c7" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="694" y="664" class="legend-text">Agent / 处理组件</text>
+
+<rect x="672" y="670" width="14" height="14" rx="3" fill="#f4e4c1" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="694" y="682" class="legend-text">基础设施 / 网络组件</text>
+
+</svg>
