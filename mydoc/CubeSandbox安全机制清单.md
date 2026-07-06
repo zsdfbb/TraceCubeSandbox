@@ -11,26 +11,65 @@
 
 ![系统安全边界总览](系统安全边界总览.svg)
 
-> 上图使用 Claude Official 风格重绘，暖色调背景，7 层安全边界以虚线框分层堆叠；蓝/青/米/灰四色语义着色区分组件类型；实线/虚线/蓝色实线三类箭头区分数据流、配置关系和穿层调用。
+> 上图使用 Claude Official 风格重绘，暖色调背景，**5 个真边界 + 7 层纵深防御 + 3 个横切关注点** 以虚线框分层堆叠；蓝/青/米/灰四色语义着色区分组件类型；实线/虚线/蓝色实线三类箭头区分数据流、配置关系和穿层调用。
 
-### 安全边界总结
+### 安全边界总结（2026/07 修订）
 
-| 边界 | 位置 | 核心安全机制 | 编号 |
-|------|------|-------------|------|
-| **1. API 接入层** | CubeAPI / WebUI → 外部 | 认证回调、速率限制、会话 | 4.1 / 4.2 / 4.4 / 4.6 |
-| **2. 控制面** | CubeMaster / Redis | 多租户 namespace、默认凭据 | 4.5 / 4.7 |
-| **3. 主机进程层** | Cubelet / CubeShim / cube-hypervisor | Shim seccomp、no_reaper、vsock、rate limiter | 2.1.2 / 3.6 / 3.7 / 3.8 / 1.7 |
-| **4. 主机内核** | Host OS Kernel | grub 硬化、cgroup、namespace 过滤、eBPF | 2.3 / 2.4 / 2.5 / 2.6 / 3.4.1 / 3.4.3 |
-| **5. KVM 边界** | Host ↔ Guest (核心) | KVM microVM、独立 kernel、virtio、IOMMU | 1.1 / 1.2 / 1.3 / 1.4 / 1.5 / 1.6 |
-| **6. Guest 内部** | Guest OS + agent + 容器 | agent seccomp、capability、overlayfs | 2.1.3 / 2.2 / 2.4 / 3.5 |
-| **7. 出网边界** | TAP → eBPF → TPROXY | 独立 TAP、eBPF L3/L4、L7 MITM | 3.4.1 / 3.4.2 / 3.4.4 |
+> 把原来的 7 层重命名为「5 个真边界 (T1–T5) + 7 层纵深防御 (L1–L7) + 3 个横切关注点」。原 Layer 3/4/6 是同信任域内的加固,不是真边界;原 Layer 1 被拆为 T1 (外部→CubeAPI) 和 L1 (WebUI session);原缺失的 CubeProxy 入站 / operator 信任 / 存储 CoW / 可观测性 egress 补齐为 T2 / T5 + L6 / L7。详细评估见 `mydoc/security-docs/00-boundary-model-review-2026-07.md`（待补）。
+
+#### 真边界（信任跃迁）
+
+| # | 边界 | 位置 | 核心安全机制 | 文档编号 |
+|---|------|------|-------------|----------|
+| **T1** | 外部 → CubeAPI | ingress | auth callback、rate limit、bearer token、回调透传 `X-Request-Path` | 4.1 / 4.2 |
+| **T2** | 运维 → 配置 / 镜像 ⚠️ | operator trust | 当前缺失:建议 config 签名 + 镜像签名 + template chain-of-trust + hotswap 受限字段 | (新增) |
+| **T3** | Host ↔ Guest（**KVM 核心**） | KVM boundary | KVM microVM、独立 guest kernel、virtio 设备隔离、IOMMU/VFIO | 1.1 / 1.2 / 1.3 / 1.4 / 1.5 / 1.6 |
+| **T4** | Guest → 互联网 | egress | 独立 TAP、eBPF L3/L4 (CubeVS)、TPROXY L7 MITM (CubeEgress)、credential inject | 3.4.1 / 3.4.2 / 3.4.4 |
+| **T5** | 互联网 → Sandbox | CubeProxy inbound | `*.cube.app` 通配 DNS、`traffic_access_token` 校验、nginx shared cache、Redis 元数据 | (新增) |
+
+#### 纵深防御层（同信任域内加固）
+
+| # | 层级 | 域 | 核心安全机制 | 文档编号 |
+|---|------|----|-------------|----------|
+| **L1** | WebUI 域 | WebUI 前端 + CubeAPI `/auth/*` | DB session、24h TTL、客户端路由守卫 ⚠️ 服务端 middleware 缺失 | 4.4 / 4.6 |
+| **L2** | 控制面域 | CubeMaster + Redis + MySQL | 多租户 containerd namespace、Redis TTL 安全、hotswap reload ⚠️ race | 4.5 / 4.7 |
+| **L3** | host 进程域 | Cubelet + CubeShim + cube-hypervisor | seccomp ×3 层、no_reaper、vsock、rate limiter、capability drop | 2.1.1 / 2.1.2 / 3.6 / 3.7 / 3.8 |
+| **L4** | host 内核域 | Host OS Kernel | grub 硬化、cgroup、namespace 过滤、eBPF (CubeVS)、TAP sysctl | 2.3 / 2.4 / 2.5 / 2.6 / 3.4.1 / 3.4.3 |
+| **L5** | guest OS 域 | Guest Kernel + cube-agent + OCI 容器 | guest agent seccomp、capability 5-set、overlayfs / virtiofs | 2.1.3 / 2.2 / 2.4 / 3.5 |
+| **L6** | 存储域 ⚠️ | CoW 池 + virtiofs lower_dir + host-mount allowlist | virtio-pmem rootfs、virtiofs tag、`allowed_host_mount_prefixes`、CubeCoW FICLONE | 3.5 / 1.6 / hostdir_mount |
+| **L7** | 可观测性域 ⚠️ | vsock-exporter + logs + audit | 端口 10240 主动拉、bincode 序列化、Audit ⚠️ 无 quota / 无 redaction | (新增) |
+
+#### 横切关注点（Cross-cutting）
+
+| 关注点 | 描述 | 涉及层级 |
+|--------|------|----------|
+| **多租户隔离** | 跨所有层的横切维度:API key → containerd ns → guest kernel → TAP → Redis key → mount prefix 必须 tenant-scoped | T1 / T3 / T4 / T5 + L1 / L2 / L6 |
+| **guest-to-guest 经 host** | 同一 host 进程 (Cubelet/shim/cube-hypervisor) 服务多 sandbox,A 逃逸到 host 进程后可读 B 的元数据 / 卷 / 快照 | T3 完整性依赖 L2 / L3 |
+| **fail-closed 默认** | `auth_callback_url=None` 默认全放行;`allowed_host_mount_prefixes` 默认 `/data/shared/` 通常不存在;WebUI 默认 admin/admin;MySQL `cube_pass` / Redis `ceuhvu123` 默认密码 | T1 / T2 / L1 / L6 启动校验 |
 
 ### 设计理念
 
-- **纵深防御**：七层边界各自独立失效。攻击者需要突破多层才能造成实质损害
-- **三层 seccomp** 覆盖主机→VMM→Guest 完整链路（边界 3/4/6）
-- **网络双保险**：边界 4 eBPF（L3/L4 线速）+ 边界 7 TPROXY（L7 透明代理）
-- **KVM 为核心**：边界 5 用独立 guest kernel 替代共享内核 namespace，容器逃逸面从 1 收敛到 0
+- **纵深防御**:5 个真边界 + 7 层纵深防御各自独立失效。攻击者需要突破多层才能造成实质损害
+- **真边界全在 host 信任域**:T1/T2/T3/T4/T5 五个跃迁点都位于 host 侧,因为 **guest = untrusted** 是本项目的根本前提
+- **三层 seccomp** 覆盖主机→VMM→Guest 完整链路 (L3 host 进程 + L4 host 内核 + L5 guest agent)
+- **网络双保险**:L4 eBPF (L3/L4 线速) + T4 TPROXY (L7 透明代理)
+- **KVM 为核心**:T3 用独立 guest kernel 替代共享内核 namespace,容器逃逸面从 1 收敛到 0
+- **eBPF 必须放 host 内核**:策略执行点必须在不可信域之外,否则 guest root 可 `bpftool prog detach` 卸载/替换策略
+
+### 已知实现缺陷（按优先级）
+
+> 以下缺陷需要在文档之外单独修复。完整清单见 `mydoc/security-docs/` 待办或 GitHub Issues。
+
+| 优先级 | 编号 | 缺陷 | 位置 |
+|--------|------|------|------|
+| 🔴 Critical | C1 | `cube.master.*` annotation 全量透传到 shim,调用者可换内核 / 追加 cmdline | `CubeMaster/pkg/service/sandbox/util.go:680-686` |
+| 🔴 Critical | C2 | `validateHostPath` 纯字符串校验,无 inode / symlink 强制,TOCTOU | `CubeMaster/pkg/service/sandbox/hostdir_mount.go:114-124` |
+| 🟠 High | C3 | AgentHub `rsync -a --delete` 跟随 symlink | `CubeAPI/src/handlers/agenthub.rs:858-899` |
+| 🟠 High | C4 | auth callback 默认关闭 → 所有请求放行 | `CubeAPI/src/middleware/auth.rs:53` |
+| 🟠 High | C5 | WebUI admin/admin + 客户端守卫 (无服务端 middleware) | `CubeAPI/src/handlers/auth.rs:6-9,98` |
+| 🟠 High | C6 | 默认凭据 cube_pass / ceuhvu123 写在仓库里 | `CubeMaster/conf.yaml:48,60` |
+| 🟠 High | C7 | `AllowPublicTraffic` 旧数据默认 public,无迁移脚本 | `CubeProxy/lua/sandbox_backend.lua:164-171` |
+| 🟡 Medium | C8-C12 | `cfg` 重载 race、IsAbs 用 raw input、mount 数量无上限、大小写不敏感 FS 可逃逸、path 不存在无检查 | `CubeMaster/pkg/base/config/config.go:1186-1193` 等 |
 
 ---
 
