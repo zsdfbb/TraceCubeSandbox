@@ -3,7 +3,7 @@
 > 调研时间: 2026/07/08
 > 调研范围: `/home/zs/Develop/TraceCubeSandbox/CubeShim/` 全量 Rust 源码
 > 目的: 系统性梳理 CubeShim (containerd Shim v2) 的架构、处理流程与安全配置
-> 配套文档: [security-boundaries/T3-cubesandbox-node.md](security-boundaries/T3-cubesandbox-node.md) (边界视角,本文档是"内部视角")
+> 配套文档: [security-boundaries/T3-cubesandbox-node.md](../安全边界/T3-cubesandbox-node.md) (边界视角,本文档是"内部视角")
 >
 > 每节都带文件位置证据,可以直接引用。
 
@@ -433,7 +433,7 @@ CubeShim 是 SVG 中 **T3 (Node Trust 真边界)** 的关键执行点:
 | L5 (Guest 域) | vsock → cube-agent (guest 内 PID 1) |
 | L7 (可观测性域) | Shim 日志 `/data/log/CubeShim/` + container 日志转发 |
 
-详细边界视角见 [security-boundaries/T3-cubesandbox-node.md](security-boundaries/T3-cubesandbox-node.md)。
+详细边界视角见 [security-boundaries/T3-cubesandbox-node.md](../安全边界/T3-cubesandbox-node.md)。
 
 ---
 

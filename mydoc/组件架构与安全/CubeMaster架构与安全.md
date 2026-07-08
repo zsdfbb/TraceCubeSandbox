@@ -3,7 +3,7 @@
 > 调研时间: 2026/07/07
 > 调研范围: `/home/zs/Develop/TraceCubeSandbox/CubeMaster/` 全量 Go 源码 + 配置 + 部署脚本
 > 目的: 系统性梳理 CubeMaster (CubeSandbox 的控制面 + 调度器) 的架构、处理流程与安全配置
-> 配套文档: [security-boundaries/T2-operator-trust.md](security-boundaries/T2-operator-trust.md) (边界视角,本文档是"内部视角")
+> 配套文档: [../安全边界/T2-operator-trust.md](../安全边界/T2-operator-trust.md) (边界视角,本文档是"内部视角")
 >
 > 每节都带文件位置证据,可以直接引用。
 
@@ -656,7 +656,7 @@ CubeMaster 是 SVG 中 **T2 (Operator Trust)** 真边界的核心执行点:
 | L6 (存储域) | `hostdir_mount.go` validateHostPath |
 | L7 (可观测性域) | 配置变更审计 + 模板中心日志 |
 
-详细边界视角见 [security-boundaries/T2-operator-trust.md](security-boundaries/T2-operator-trust.md)。
+详细边界视角见 [security-boundaries/T2-operator-trust.md](../安全边界/T2-operator-trust.md)。
 
 ---
 

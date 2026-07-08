@@ -3,7 +3,7 @@
 > 调研时间: 2026/07/07
 > 调研范围: `/home/zs/Develop/TraceCubeSandbox/CubeAPI/` 全量 Rust 源码
 > 目的: 系统性梳理 CubeAPI (CubeSandbox 的 HTTP 网关) 的架构、处理流程与安全配置
-> 配套文档: [security-boundaries/T1-cubeapi-ingress.md](security-boundaries/T1-cubeapi-ingress.md) (边界视角,本文档是"内部视角")
+> 配套文档: [../安全边界/T1-cubeapi-ingress.md](../安全边界/T1-cubeapi-ingress.md) (边界视角,本文档是"内部视角")
 >
 > 每节都带文件位置证据,可以直接引用。
 
@@ -566,7 +566,7 @@ CubeAPI 是 SVG 中 **T1 (外部 → CubeAPI)** 真边界的关键执行点:
 | L4 (host 内核域) | ingress 路径 eBPF policy |
 | L7 (可观测性域) | API 访问日志 + auth callback 失败计数 |
 
-详细边界视角见 [security-boundaries/T1-cubeapi-ingress.md](security-boundaries/T1-cubeapi-ingress.md)。
+详细边界视角见 [security-boundaries/T1-cubeapi-ingress.md](../安全边界/T1-cubeapi-ingress.md)。
 
 ---
 

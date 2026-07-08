@@ -3,7 +3,7 @@
 > 调研时间: 2026/07/08
 > 调研范围: `/home/zs/Develop/TraceCubeSandbox/CubeNet/` 全量 Go + eBPF C 源码
 > 目的: 系统性梳理 CubeNet (网络虚拟化 eBPF 数据面) 的架构、处理流程与安全配置
-> 配套文档: [security-boundaries/T4-cubenet-datapath.md](security-boundaries/T4-cubenet-datapath.md) (边界视角,本文档是"内部视角")
+> 配套文档: [security-boundaries/T4-cubenet-datapath.md](../安全边界/T4-cubenet-datapath.md) (边界视角,本文档是"内部视角")
 >
 > 每节都带文件位置证据,可以直接引用。
 
@@ -828,7 +828,7 @@ CubeNet 是 SVG 中 **T4 (Network datapath)** 的关键执行点:
 | **L6** (网络域) | SNAT/DNAT 转换 + LPM 策略执行 + DNS 学习 |
 | **T3** (Agent Control) | network-agent 通过 cubevs API 编排策略 |
 
-详细边界视角见 [security-boundaries/T4-cubenet-datapath.md](security-boundaries/T4-cubenet-datapath.md)。
+详细边界视角见 [security-boundaries/T4-cubenet-datapath.md](../安全边界/T4-cubenet-datapath.md)。
 
 ---
 

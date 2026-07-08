@@ -3,7 +3,7 @@
 > 调研时间: 2026/07/08
 > 调研范围: `/home/zs/Develop/TraceCubeSandbox/Cubelet/` 全量 Go 源码
 > 目的: 系统性梳理 Cubelet (CubeSandbox 的节点代理) 的架构、处理流程与安全配置
-> 配套文档: [security-boundaries/T3-cubelet.md](security-boundaries/T3-cubelet.md) (边界视角,本文档是"内部视角")
+> 配套文档: [security-boundaries/T3-cubelet.md](../安全边界/T3-cubelet.md) (边界视角,本文档是"内部视角")
 >
 > 每节都带文件位置证据,可以直接引用。
 
@@ -643,7 +643,7 @@ func ValidateUUID(id string) error               // UUID: ^[A-Fa-f0-9-]{1,64}$
 | L7 (可观测性域) | 节点状态上报 + Metrics (:9998) + Debug (:9966) |
 | L8 (控制面域) | ttrpc ↔ CubeMaster + containerd shim v2 ↔ CubeShim |
 
-详细边界视角见 [security-boundaries/T3-cubelet.md](security-boundaries/T3-cubelet.md)。
+详细边界视角见 [security-boundaries/T3-cubelet.md](../安全边界/T3-cubelet.md)。
 
 ---
 
